@@ -1,0 +1,18 @@
+﻿#pragma kernel CSMain
+
+struct Cube
+{
+    float3 xPos;
+    float4 color;
+};
+
+RWStructuredBuffer<Cube> cubes;
+
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+    Cube c = cubes[id.x];
+    c.xPos += 5;
+}
