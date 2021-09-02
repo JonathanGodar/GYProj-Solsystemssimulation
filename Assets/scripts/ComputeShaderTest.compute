@@ -2,17 +2,21 @@
 
 struct Cube
 {
-    float3 xPos;
+    float3 pos;
     float4 color;
 };
 
 RWStructuredBuffer<Cube> cubes;
 
-
-[numthreads(8,8,1)]
+[numthreads(10, 1, 1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    // TODO: insert actual code here!
+
+    float xPos = id.x / resolution;
+
     Cube c = cubes[id.x];
-    c.xPos += 5;
+    c.color = float4(xPos, 0, 0, 1.0);
+
+    cubes[id.x] = c;
+
 }
