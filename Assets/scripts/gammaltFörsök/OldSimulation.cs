@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using Debug = UnityEngine.Debug;
 
-public class Simulation : MonoBehaviour
+public class OldSimulation : MonoBehaviour
 {
 
     [SerializeField] ComputeShader computeShader;
