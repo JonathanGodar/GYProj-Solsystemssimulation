@@ -1,4 +1,6 @@
 using System;
+using UnityEngine;
+
 namespace Simulation
 {
     public class VectorD3
@@ -44,6 +46,12 @@ namespace Simulation
         }
 
 
+        public override string ToString()
+        {
+            return $"VecD3 {{ X: {X}, Y: {Y}, Z: {Z}}}";
+        }
+
+
         #region vector to vector overloads
         public static VectorD3 operator +(VectorD3 a, VectorD3 b)
         {
@@ -82,11 +90,10 @@ namespace Simulation
         #endregion
 
 
-
-
-
-
-
+        public static explicit operator Vector3(VectorD3 b)  // explicit byte to digit conversion operator
+        {
+            return new Vector3((float)b.X, (float)b.Y, (float)b.Z);
+        }
     }
 
 

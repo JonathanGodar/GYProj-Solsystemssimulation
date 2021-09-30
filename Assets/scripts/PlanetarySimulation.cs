@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Simulation
 {
@@ -14,8 +15,8 @@ namespace Simulation
         public PlanetarySimulation()
         {
 
-            Planet p1 = new Planet(new VectorD3(1, 0, 0), VectorD3.Zero, 200_000_000);
-            Planet p2 = new Planet(new VectorD3(-1, 0, 0), VectorD3.Zero, 2);
+            Planet p1 = new Planet(new VectorD3(5, 0, 0), new VectorD3(0, 0.0001, 0), 2_000_000);
+            Planet p2 = new Planet(new VectorD3(-5, 0, 0), new VectorD3(0, -0.001, 0), 2);
 
             planets.Add(p1);
             planets.Add(p2);
@@ -24,7 +25,11 @@ namespace Simulation
         public string DebugInfo()
         {
             return planets[0].Position.X + " " + planets[1].Position.X;
+        }
 
+
+        public List<Planet> Planets{
+            get => planets;
         }
 
 
@@ -32,6 +37,7 @@ namespace Simulation
         {
             CalculateForces();
             StepPlanets(timeStep);
+            planets.ForEach((p) => Debug.Log(p));
         }
 
 

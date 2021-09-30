@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -31,6 +32,12 @@ namespace Simulation
             Position = position;
             Mass = mass;
         }
+
+        public override string ToString()
+        {
+            return $"Planet {{ Mass: {Mass},\t Velocity: {Velocity},\t Force: {CurrentForce},\t Pos: {Position}}}";
+        }
+
     }
 
 }
