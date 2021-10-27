@@ -15,8 +15,15 @@ namespace Simulation
         public PlanetarySimulation()
         {
 
-            Planet p1 = new Planet(new VectorD3(5, 0, 0), new VectorD3(0, 0.0001, 0), 2_000_000);
-            Planet p2 = new Planet(new VectorD3(-5, 0, 0), new VectorD3(0, -0.001, 0), 2);
+            //Planet p1 = new Planet(new VectorD3(5, 0, 0), new VectorD3(0, 0.0031, 0), 2_000_000);
+            //Planet p2 = new Planet(new VectorD3(-5, 0, 0), new VectorD3(0, -0.0031, 0), 2_000_000);
+
+
+
+
+            Planet p1 = new Planet(new VectorD3(0, 5, 0), new VectorD3(0.0031, 0, 0), 2_000_000);
+            Planet p2 = new Planet(new VectorD3(0, -5, 0), new VectorD3(-0.0031, 0, 0), 200_000_000);
+
 
             planets.Add(p1);
             planets.Add(p2);
@@ -37,7 +44,7 @@ namespace Simulation
         {
             CalculateForces();
             StepPlanets(timeStep);
-            planets.ForEach((p) => Debug.Log(p));
+            //planets.ForEach((p) => Debug.Log(p));
         }
 
 
@@ -71,6 +78,17 @@ namespace Simulation
 
         }
 
+        public VectorD3 CenterOfMass() {
+
+            VectorD3 sum = new VectorD3();
+            double totalMass = 0;
+            foreach (var p in planets) {
+                sum += p.Mass * p.Position;
+                totalMass += p.Mass;
+            }
+            return sum / totalMass;
+        }
+
         public void ClearForces()
         {
             planets.ForEach((p) => p.CurrentForce = VectorD3.Zero);
@@ -80,6 +98,11 @@ namespace Simulation
         {
             // Källa Newtons gravitations lag. 
             return G * a.Mass * b.Mass / VectorD3.DistanceSquared(a.Position, b.Position);
+        }
+
+        public static Planet ToReducetPlanet(Planet p1, Planet p2) {
+            // Kan också vara p2 - p1
+            return new Planet(p1.Position - p2.Position, p1.Velocity - p2.Velocity, p1.Mass * p2.Mass / (p1.Mass + p2.Mass));
         }
 
     }

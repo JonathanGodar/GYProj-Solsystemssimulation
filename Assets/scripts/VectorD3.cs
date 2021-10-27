@@ -94,7 +94,10 @@ namespace Simulation
         {
             return new Vector3((float)b.X, (float)b.Y, (float)b.Z);
         }
+        public double Angle => Math.Atan2(X, Y);
+        public static VectorD3 FromPolar(double angle, double length) {
+            return new VectorD3(length * Math.Cos(angle), length * Math.Sin(angle));
+        }
+
     }
-
-
 }
