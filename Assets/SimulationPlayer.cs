@@ -24,23 +24,41 @@ public class SimulationPlayer : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        sim = new PlanetarySimulation();
+
+        //sim = new PlanetarySimulation();
 
 
-        foreach (Planet p in sim.Planets)
-        {
-            GameObject go = Instantiate(planetPrefab);
-            var gplanet = go.GetComponent<GraphicalPlanet>();
-            gplanet.SetPlanet(p);
-        }
+        //foreach (Planet p in sim.Planets)
+        //{
+        //    GameObject go = Instantiate(planetPrefab);
+        //    var gplanet = go.GetComponent<GraphicalPlanet>();
+        //    gplanet.SetPlanet(p);
+        //}
 
-        centerOfMass = Instantiate(sphere);
+        //centerOfMass = Instantiate(sphere);
 
-        for(int i = 0; i < initialFrameSteps; i++)
-        {
-            sim.Update(timeStep);
-        }
+        //for(int i = 0; i < initialFrameSteps; i++)
+        //{
+        //    sim.Update(timeStep);
+        //}
 
+        VectorD3 a = new VectorD3(-2, 6.5, 3);
+        Vector3 ar = new Vector3(-2f, 6.5f, 3f);
+
+        VectorD3 b = new VectorD3(32, -3.2222, 23);
+        Vector3 br = new Vector3(-32, -3.2222f, 23f);
+
+
+
+        //Debug.Log(new Vector3(2, 3, 4) * new Vector3(2, 3, 4));
+
+        //Debug.Log(a * b);
+        //Debug.Log(ar * br);
+
+        //Debug.Log(ar * br);
+
+
+        //Debug.Log()
     }
 
 
@@ -56,17 +74,18 @@ public class SimulationPlayer : MonoBehaviour
     {
 
 
-        if(remove != null)
+        //if(remove != null)
+        //{
+        //    remove(); 
+        //}
+
+
+        for (int i = 0; i < stepsPerFrame; i++)
         {
-            remove(); 
-        }
-
-
-        for (int i = 0; i < stepsPerFrame; i++) {
-            sim.Update(timeStep); 
+            sim.Update(timeStep);
         }
 
         centerOfMass.GetComponent<Transform>().position = (Vector3)((sim.Planets[0].Position * sim.Planets[0].Mass + sim.Planets[1].Position * sim.Planets[1].Mass) / (sim.Planets[0].Mass + sim.Planets[1].Mass));
-        GetComponent<Transform>().position = (Vector3)sim.CenterOfMass() - new Vector3(0, 0, 60);
+        GetComponent<Transform>().position = (Vector3)sim.CenterOfMass() - new Vector3(0, 0, 50);
     }
 }

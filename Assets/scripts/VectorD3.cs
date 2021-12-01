@@ -63,15 +63,15 @@ namespace Simulation
             return new VectorD3(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
         }
 
-        public static VectorD3 operator *(VectorD3 a, VectorD3 b)
-        {
-            return new VectorD3(a.X * b.X, a.Y * b.Y, a.Z * b.Z);
-        }
+        //public static VectorD3 operator *(VectorD3 a, VectorD3 b)
+        //{
+        //    return new VectorD3(a.X * b.X, a.Y * b.Y, a.Z * b.Z);
+        //}
 
-        public static VectorD3 operator /(VectorD3 a, VectorD3 b)
-        {
-            return new VectorD3(a.X / b.X, a.Y / b.Y, a.Z / b.Z);
-        }
+        //public static VectorD3 operator /(VectorD3 a, VectorD3 b)
+        //{
+        //    return new VectorD3(a.X / b.X, a.Y / b.Y, a.Z / b.Z);
+        //}
         #endregion
 
         #region vector to scalar overloads
@@ -97,6 +97,15 @@ namespace Simulation
         public double Angle => Math.Atan2(X, Y);
         public static VectorD3 FromPolar(double angle, double length) {
             return new VectorD3(length * Math.Cos(angle), length * Math.Sin(angle));
+        }
+
+        public static VectorD3 Cross(VectorD3 a, VectorD3 b)
+        {
+            return new VectorD3(
+                    (a.Y * b.Z) - (a.Z * b.Y),
+                    (a.Z * b.X) - (a.X * b.Z),
+                    (a.X * b.Y) - (a.Y * b.X)
+                );
         }
 
     }

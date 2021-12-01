@@ -38,12 +38,5 @@ namespace Simulation
             return $"Planet {{ Mass: {Mass},\t Velocity: {Velocity},\t Force: {CurrentForce},\t Pos: {Position}}}";
         }
 
-        // För analytiska metoden
-        public double AngularMomentum() {
-            throw new NotImplementedException();
-            return Mass * Position.Length();
-        }
-
     }
-
 }
