@@ -26,10 +26,11 @@ namespace Simulation
             this.p1 = p1;
             this.p2 = p2;
 
-            Debug.Log(Velocity);
-            Debug.Log(Position);
-            Debug.Log(Mass);
-            Debug.Log(AngularMomentum());
+
+            //Debug.Log(1 + 2 * Mass * Energy() * Position.LengthSquared() / AngularMomentum().LengthSquared());
+            //Debug.Log(Eccentricity());
+            //Debug.Log(Energy());
+            //Debug.Log(AngularMomentum());
 
         }
         
@@ -52,39 +53,56 @@ namespace Simulation
 
         public double RadiusFromAngle(double angle)
         {
-            // TODO Kolla vad theta 0 är
-            return R0() / (1 + Eccentricity() * Math.Cos(angle));
+            //return 0;
+            return R0() / (1 - Eccentricity() * Math.Cos(angle));
         }
 
-
-        public double Eccentricity() {
-
-            return Math.Sqrt(2 * TotalEnergy() * R0() / (PlanetarySimulation.G * p1.Mass * p2.Mass) + 1);
-
-        }
-
-        public double R0() {
-            return AngularMomentum().LengthSquared() / (Mass * PlanetarySimulation.G * p1.Mass * p2.Mass);
-        }
-
-        public double TotalEnergy() {
-            return KineticEnergy() - PotentialEnergy();
-        }
-
-        private double KineticEnergy()
+        private double Eccentricity()
         {
-            return Mass * Velocity.LengthSquared() / 2; 
+            return Math.Sqrt(Math.Abs(1 + 2 * Mass * Energy() * Position.LengthSquared() / AngularMomentum().LengthSquared()));
+            //return Math.Sqrt(Math.Abs(1 + 2 * Mass * Energy() * Math.Pow(R0(), 2) / AngularMomentum().LengthSquared()));
+            //return Math.Sqrt(Math.Abs(1 + 2 * Energy() * AngularMomentum().LengthSquared() /(Mass * Math.Pow(PlanetarySimulation.G * p1.Mass * p2.Mass, 2))));
         }
 
-        /// <summary>
-        /// Räknar ut den potensiella energin från origo
-        /// </summary>
-        /// <returns></returns>
-        private double PotentialEnergy()
+        private double Energy()
         {
-            return PlanetarySimulation.G * p1.Mass * p2.Mass / Position.LengthSquared();
+            return 1 / 2 * Mass * Velocity.LengthSquared() - PlanetarySimulation.G * p1.Mass * p2.Mass / Position.Length();
         }
-        
 
+        private double R0()
+        {
+            return Position.Length();
+            //return AngularMomentum().LengthSquared() / (Mass * PlanetarySimulation.G * p1.Mass * p2.Mass);
+            //return AngularMomentum() / (Mass * p1.Mass * p2.Mass * PlanetarySimulation.G);
+        }
+
+
+        //public double Eccentricity() {
+
+        //    return Math.Sqrt(2 * TotalEnergy() * R0() / (PlanetarySimulation.G * p1.Mass * p2.Mass) + 1);
+
+        //}
+
+        //public double R0() {
+        //    return AngularMomentum().LengthSquared() / (Mass * PlanetarySimulation.G * p1.Mass * p2.Mass);
+        //}
+
+        //public double TotalEnergy() {
+        //    return KineticEnergy() - PotentialEnergy();
+        //}
+
+        //private double KineticEnergy()
+        //{
+        //    return Mass * Velocity.LengthSquared() / 2; 
+        //}
+
+        ///// <summary>
+        ///// Räknar ut den potensiella energin från origo
+        ///// </summary>
+        ///// <returns></returns>
+        //private double PotentialEnergy()
+        //{
+        //    return PlanetarySimulation.G * p1.Mass * p2.Mass / Position.LengthSquared();
+        //}
     }
 }

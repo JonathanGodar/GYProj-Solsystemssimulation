@@ -62,16 +62,6 @@ namespace Simulation
         {
             return new VectorD3(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
         }
-
-        //public static VectorD3 operator *(VectorD3 a, VectorD3 b)
-        //{
-        //    return new VectorD3(a.X * b.X, a.Y * b.Y, a.Z * b.Z);
-        //}
-
-        //public static VectorD3 operator /(VectorD3 a, VectorD3 b)
-        //{
-        //    return new VectorD3(a.X / b.X, a.Y / b.Y, a.Z / b.Z);
-        //}
         #endregion
 
         #region vector to scalar overloads
@@ -88,7 +78,6 @@ namespace Simulation
             return new VectorD3(a.X / b, a.Y / b, a.Z / b);
         }
         #endregion
-
 
         public static explicit operator Vector3(VectorD3 b)  // explicit byte to digit conversion operator
         {

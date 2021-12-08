@@ -10,6 +10,10 @@ namespace Simulation
         // Källa värde för G
         public const double G = 0.000000000066743;  //6.674 * Math.Pow(10, -11);
 
+
+        public static Planet p1 = new Planet(new VectorD3(0, 10, 0), new VectorD3(0.0031, 0, 0), 2_000_000);
+        public static Planet p2 = new Planet(new VectorD3(0, -10, 0), new VectorD3(-0.0031, 0, 0), 2_000_000);
+
         private List<Planet> planets = new List<Planet>();
         public PlanetarySimulation()
         {
@@ -25,8 +29,8 @@ namespace Simulation
 
 
 
-            Planet p1 = new Planet(new VectorD3(0, 5, 0), new VectorD3(0.0031, 0, 0), 2_000_000);
-            Planet p2 = new Planet(new VectorD3(0, -5, 0), new VectorD3(-0.0031, 0, 0), 2_000_000);
+            //Planet p1 = new Planet(new VectorD3(0, 5, 0), new VectorD3(0.0031, 0, 0), 2_000_000);
+            //Planet p2 = new Planet(new VectorD3(0, -5, 0), new VectorD3(-0.0031, 0, 0), 2_000_000);
 
 
             planets.Add(p1);
