@@ -19,6 +19,17 @@ namespace Simulation
         }
 
 
+        public double magnitude {
+            get {
+                return Math.Sqrt(X * X + Y * Y + Z * Z);
+            }
+        }
+
+        public VectorD3 normalized {
+            get {
+                return this / magnitude;
+            }
+        }
         public double LengthSquared()
         {
             return X * X + Y * Y + Z * Z;
@@ -87,6 +98,13 @@ namespace Simulation
         public static VectorD3 FromPolar(double angle, double length) {
             return new VectorD3(length * Math.Cos(angle), length * Math.Sin(angle));
         }
+
+        // Implement the negate operator
+        public static VectorD3 operator -(VectorD3 a)
+        {
+            return new VectorD3(-a.X, -a.Y, -a.Z);
+        }
+
 
         public static VectorD3 Cross(VectorD3 a, VectorD3 b)
         {

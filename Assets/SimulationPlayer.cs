@@ -19,7 +19,15 @@ public class SimulationPlayer : MonoBehaviour
     [SerializeField] int initialFrameSteps = 250 * 60 * 60 * 20;
 
 
-    List<GraphicalPlanet> GPlanets = new List<GraphicalPlanet>();
+    // List<GraphicalPlanet> GPlanets = new List<GraphicalPlanet>();
+
+    GraphicalPlanet gp1, gp2;
+
+
+    
+    GameObject relativeDistanceIndicator;
+
+
 
     // Start is called before the first frame update
     void Start()
@@ -27,20 +35,20 @@ public class SimulationPlayer : MonoBehaviour
 
         sim = new PlanetarySimulation();
 
+        GameObject temp = Instantiate(planetPrefab);
+        gp1 = temp.GetComponent<GraphicalPlanet>();
+        gp1.SetPlanet(sim.p1);
 
-        foreach (Planet p in sim.Planets)
-        {
-            GameObject go = Instantiate(planetPrefab);
-            var gplanet = go.GetComponent<GraphicalPlanet>();
-            gplanet.SetPlanet(p);
-        }
+        temp = Instantiate(planetPrefab);
+        gp2 = temp.GetComponent<GraphicalPlanet>();
+        gp2.SetPlanet(sim.p2);
 
-        centerOfMass = Instantiate(sphere);
+        DrawPath.QueueDraw(sim);
 
-        for (int i = 0; i < initialFrameSteps; i++)
-        {
-            sim.Update(timeStep);
-        }
+        relativeDistanceIndicator = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+
+        // Set the distance indicator to be yellow
+        relativeDistanceIndicator.GetComponent<Renderer>().material.color = Color.yellow;
     }
 
 
@@ -54,20 +62,11 @@ public class SimulationPlayer : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-
-        //if(remove != null)
-        //{
-        //    remove(); 
-        //}
-
-
         for (int i = 0; i < stepsPerFrame; i++)
         {
-            sim.Update(timeStep);
+            sim.Update(timeStep * Time.deltaTime);
         }
 
-        centerOfMass.GetComponent<Transform>().position = (Vector3)((sim.Planets[0].Position * sim.Planets[0].Mass + sim.Planets[1].Position * sim.Planets[1].Mass) / (sim.Planets[0].Mass + sim.Planets[1].Mass));
-        GetComponent<Transform>().position = (Vector3)sim.CenterOfMass() - new Vector3(0, 0, 50);
+        relativeDistanceIndicator.transform.position = (Vector3)(sim.p1.Position - sim.p2.Position); 
     }
 }

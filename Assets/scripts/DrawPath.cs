@@ -6,42 +6,49 @@ using Simulation;
 
 public class DrawPath : MonoBehaviour
 {
+	public static Planet p1, p2;
 
+	public static ReducedPlanet p;
 
+	public static List<ReducedPlanet> drawQueue = new List<ReducedPlanet>();
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        LineRenderer ln = GetComponent<LineRenderer>();
+	public static void QueueDraw(PlanetarySimulation sim)
+	{
+		p1 = sim.p1;
+		p2 = sim.p2;
 
-        double angleStep = 0.001;
-        ln.positionCount = (int)(Math.PI * 2 / angleStep);
+		p = new ReducedPlanet(p1, p2);
 
-        float radius;
-        double angle;
+		drawQueue.Add(p);
+	}
 
+	void Update()
+	{
+        
+		if (drawQueue.Count == 0)
+			return;
+		p = drawQueue[0];
+		drawQueue.RemoveAt(0);
 
+		LineRenderer ln = GetComponent<LineRenderer>();
 
-        Planet p1 = PlanetarySimulation.p1;
-        Planet p2 = PlanetarySimulation.p2;
+		double angleStep = 0.001;
+		ln.positionCount = (int)(Math.PI * 2 / angleStep);
 
-        //Planet p1 = new Planet(new VectorD3(0, 5, 0), new VectorD3(0.0031, 0, 0), 2_000_000);
-        //Planet p2 = new Planet(new VectorD3(0, -5, 0), new VectorD3(-0.0031, 0, 0), 2_000_000);
+		float radius;
+		double angle;
 
-        ReducedPlanet p = new ReducedPlanet(p1, p2);
+		for (int i = 0; i < ln.positionCount; i++)
+		{
+			angle = i * angleStep;
+			// TODO remove
+			radius = (float)p.RadiusFromAngle(angle);
 
-        for (int i = 0; i < ln.positionCount; i++)
-        {
-            angle = i * angleStep;
-            // TODO remove
-            radius = (float)p.RadiusFromAngle(angle);
+			ln.SetPosition(i, new Vector3(
+					(float)(Math.Cos(angle) * radius),
+					(float)(Math.Sin(angle) * radius), 0
+					 ));
+		}
+	}
 
-            Console.WriteLine(radius);
-            ln.SetPosition(i, new Vector3(
-                (float)(Math.Cos(angle) * radius),
-                (float)(Math.Sin(angle) * radius), 0
-                 ));
-        }
-
-    }
 }
