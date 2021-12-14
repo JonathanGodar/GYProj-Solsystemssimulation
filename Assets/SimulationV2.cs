@@ -27,20 +27,22 @@ namespace v2
 		// Calculate the gravitational force between two objects
 		public Vector3 CalculateGravitationalForce(Planet p1, Planet p2)
 		{
-			// Calculate the distance between the two objects
-			Vector3 distance = p1.position - p2.position;
+			// // Calculate the distance between the two objects
+			// Vector3 distanceVec = p1.position - p2.position;
 
-			// Calculate the magnitude of the distance
-			float distanceMagnitude = distance.magnitude;
+			// // Calculate the magnitude of the distance
+			// float distanceMagnitude = distanceVec.magnitude;
 
-			// Calculate the gravitational force
-			float gravitationalForce = (G * p1.mass * p2.mass) / (distanceMagnitude * distanceMagnitude);
+			// // Calculate the gravitational force
+			// float gravitationalForce = (G * p1.mass * p2.mass) / (distanceMagnitude * distanceMagnitude);
 
-			// Calculate the direction of the force
-			Vector3 direction = distance.normalized;
+			// // Calculate the direction of the force
+			// Vector3 direction = distanceVec.normalized;
 
-			// Return the force
-			return direction * gravitationalForce;
+			// // Return the force
+			// return direction * gravitationalForce;
+
+			return (p1.position - p2.position).normalized * /* Force is: */ G * p1.mass * p2.mass / (p1.position - p2.position).sqrMagnitude ;
 		}
 
 
@@ -68,7 +70,7 @@ namespace v2
 
 		void DrawAtAngle(float angle)
 		{
-            angle = angle + Mathf.PI;
+      angle = angle + Mathf.PI;
 			float radius = GetDistanceFromRadius(angle); // * 1.4575f;
 
 			GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -103,20 +105,30 @@ namespace v2
 			p2Visualizer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 
 			DrawAnalyticalPath();
+
+			Debug.Log(
+				"Eccentricity: " + eccentricity +
+				"\nRelative velocity: " + relativeVelocity +
+				"\nAngular momentum: " + angularMomentum +
+				"\nEnergy: " + energy +
+				"\nReduced mass: " + reducedMass +
+				"\nR0: " + r0
+			);
+
 		}
 
 
 		void UpdatePlanet(ref Planet p, Vector3 force, float deltaTime)
 		{
-			// Calculate the acceleration
+			// Calculate the acceleration: F = ma => a = F / m
 			Vector3 acceleration = force / p.mass;
-
 
 			// v*t + 1/2at^2
 			p.position += p.velocity * deltaTime + 0.5f * acceleration * deltaTime * deltaTime;
 
 			// v + at
 			p.velocity += acceleration * deltaTime;
+
 		}
 
 
@@ -132,10 +144,18 @@ namespace v2
 		{
 			for (int i = 0; i < stepsPerFrame; i++)
 			{
-				StepTime(timeStep * Time.deltaTime, CalculateGravitationalForce(p1, p2));
+
+				StepTime(timeStep, CalculateGravitationalForce(p1, p2));
+
 			}
 			DrawVisualizers();
+
+	
+
+			Debug.Log(p1.velocity.sqrMagnitude * p1.mass / 2 + p2.velocity.sqrMagnitude * p2.mass / 2 - G * p1.mass * p2.mass / (p1.position - p2.position).magnitude);
 		}
+
+		// private float reducedMass
 
 		private void DrawVisualizers()
 		{
@@ -160,8 +180,9 @@ namespace v2
 	{
 		public Vector3 position;
 		public Vector3 velocity;
-
 		public float mass;
+
+		public float keneticEnergy => velocity.sqrMagnitude  * mass / 2;
 
 		public Planet(Vector3 position, Vector3 velocity, float mass) : this()
 		{
