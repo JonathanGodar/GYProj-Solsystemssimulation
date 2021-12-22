@@ -60,7 +60,7 @@ namespace v3
 
 		double reducedMass => (p1Initial.mass * p2Initial.mass) / (p1Initial.mass + p2Initial.mass);
 
-		double angleZero =>  Math.PI;// Math.Atan2(p1Initial.position.y - p2Initial.position.y, p1Initial.position.x - p2Initial.position.x);
+		double angleZero =>  Math.PI; // Math.Atan2(p1Initial.position.y - p2Initial.position.y, p1Initial.position.x - p2Initial.position.x);
 
 		void DrawAtAngle(double angle)
 		{
@@ -121,7 +121,6 @@ namespace v3
 
 			// v + at
 			p.velocity += acceleration * deltaTime;
-
 		}
 
 
@@ -149,7 +148,7 @@ namespace v3
 			Debug.Log(p1.velocity.sqrMagnitude * p1.mass / 2 + p2.velocity.sqrMagnitude * p2.mass / 2 - G * p1.mass * p2.mass / (p1.position - p2.position).magnitude);
 
 			Debug.Log("OwO Awular Mowentum");
-			Debug.Log()
+			Debug.Log(VectorD3.Cross(p1.position - p2.position, reducedMass * (p1.velocity - p2.velocity)).magnitude);
 
 		}
 
