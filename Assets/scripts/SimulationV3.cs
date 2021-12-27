@@ -98,7 +98,7 @@ namespace v3
 			p1Visualizer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 			p2Visualizer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 
-			DrawAnalyticalPath();
+			// DrawAnalyticalPath();
 
 			Debug.Log(
 				"Eccentricity: " + eccentricity +

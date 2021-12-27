@@ -160,9 +160,9 @@ MonoBehaviour:
       z: 0
     velocity:
       x: 0
-      y: 0.006
+      y: 0.01
       z: 0
-    mass: 1000000
+    mass: 5000000
   p2Initial:
     position:
       x: -1
@@ -170,10 +170,10 @@ MonoBehaviour:
       z: 0
     velocity:
       x: 0
-      y: -0.002
+      y: -0.01
       z: 0
-    mass: 1000000
-  stepsPerFrame: 10000
+    mass: 5000000
+  stepsPerFrame: 1000
 --- !u!4 &971995334
 Transform:
   m_ObjectHideFlags: 0
@@ -284,16 +284,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e58f9c805380f242b8bd355cf7e2436, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  planetPrefab: {fileID: 8077284326455833791, guid: 389ef46c08572564bb2f85514c15afd4,
-    type: 3}
-  sphere: {fileID: 6512482656635814456, guid: 6127f5041d7cec242a6af9f44fd9a62d, type: 3}
-  timeStep: 0.001
-  stepsPerFrame: 500
-  initialFrameSteps: 0
-  gp1: {fileID: 0}
-  gp2: {fileID: 0}
-  relativeDistanceIndicator: {fileID: 0}
-  centerOfMass: {fileID: 0}
 --- !u!1 &1851837547
 GameObject:
   m_ObjectHideFlags: 0
