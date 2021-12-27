@@ -40,6 +40,7 @@ namespace Simulation
                 return this / magnitude;
             }
         }
+
         public double LengthSquared()
         {
             return x * x + y * y + z * z;

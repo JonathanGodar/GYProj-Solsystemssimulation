@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Simulation;
 using UnityEngine;
-using System.Collections;
+using System.Text;
+using System.IO;
 
 namespace v3
 {
@@ -13,7 +14,7 @@ namespace v3
 
 		// The gravitational constant in newtons gravitational law
 		public const double G = 0.000000000066743f;  //6.674 * Math.Pow(10, -11);
-																								// public readonly double G = 0.0000000000667408f;
+																								 // public readonly double G = 0.0000000000667408f;
 
 		[SerializeField] Planet p1Initial, p2Initial;
 
@@ -23,18 +24,12 @@ namespace v3
 
 		[SerializeField] double stepsPerFrame = 1;
 
+		StreamWriter timeGraphWriter;
+		StringBuilder timeGraph;
 
 		// Calculate the gravitational force between two objects
 		public VectorD3 CalculateGravitationalForce(Planet p1, Planet p2)
 		{
-			// // Calculate the distance between the two objects // VectorD3 distanceVec = p1.position - p2.position; // // Calculate the magnitude of the distance // double distanceMagnitude = distanceVec.magnitude; // // Calculate the gravitational force // double gravitationalForce = (G * p1.mass * p2.mass) / (distanceMagnitude * distanceMagnitude);
-
-			// // Calculate the direction of the force
-			// VectorD3 direction = distanceVec.normalized;
-
-			// // Return the force
-			// return direction * gravitationalForce;
-
 			return (p1.position - p2.position).normalized * /* Force is: */ G * p1.mass * p2.mass / (p1.position - p2.position).sqrMagnitude;
 		}
 
@@ -47,20 +42,19 @@ namespace v3
 
 		double r0 => (p1Initial.position - p2Initial.position).magnitude;
 
-		double eccentricity => Math.Sqrt(1 + 2 * energy * Math.Pow(angularMomentum, 2) / (reducedMass * Math.Pow((G * p1Initial.mass * p2Initial.mass), 2)));
-		// double eccentricity => Math.Sqrt(1 + 2 * reducedMass * energy * Math.Pow(r0, 2) / Math.Pow(angularMomentum, 2));
+		double eccentricity => Math.Sqrt(1 + 2 * initialEnergy * Math.Pow(initialAngularMomentum, 2) / (reducedMass * Math.Pow((G * p1Initial.mass * p2Initial.mass), 2)));
 
-		double sqlrRelativeVelocity => (p1Initial.velocity - p2Initial.velocity).sqrMagnitude;
-		double relativeVelocity => Math.Sqrt(sqlrRelativeVelocity);
+		double sqrInitialRelativeVelocity => (p1Initial.velocity - p2Initial.velocity).sqrMagnitude;
+		double initialRelativeVelocity => Math.Sqrt(sqrInitialRelativeVelocity);
 
-		double angularMomentum => VectorD3.Cross(p1Initial.position - p2Initial.position, reducedMass * (p1Initial.velocity - p2Initial.velocity)).magnitude;
+		double initialAngularMomentum => VectorD3.Cross(p1Initial.position - p2Initial.position, reducedMass * (p1Initial.velocity - p2Initial.velocity)).magnitude;
 
-		double energy => reducedMass / 2 * sqlrRelativeVelocity - G * p1Initial.mass * p2Initial.mass / r0;
+		double initialEnergy => reducedMass / 2 * sqrInitialRelativeVelocity - G * p1Initial.mass * p2Initial.mass / r0;
 
 
 		double reducedMass => (p1Initial.mass * p2Initial.mass) / (p1Initial.mass + p2Initial.mass);
 
-		double angleZero =>  Math.PI; // Math.Atan2(p1Initial.position.y - p2Initial.position.y, p1Initial.position.x - p2Initial.position.x);
+		double angleZero => Math.PI; // Math.Atan2(p1Initial.position.y - p2Initial.position.y, p1Initial.position.x - p2Initial.position.x);
 
 		void DrawAtAngle(double angle)
 		{
@@ -73,8 +67,6 @@ namespace v3
 		}
 		private void DrawAnalyticalPath()
 		{
-
-
 			for (double angle = angleZero; angle < Math.PI * 2 + angleZero; angle += Math.PI / 1000)
 			{
 				DrawAtAngle(angle);
@@ -82,6 +74,12 @@ namespace v3
 		}
 		#endregion
 
+		void InitiateGraphs(){
+			timeGraph = new StringBuilder();
+			timeGraph.Append("Tid, Total energi, Vridmoment");
+
+			timeGraphWriter = new StreamWriter("Assets/graphs/timeGraph.csv", false);
+		}
 
 		// Start is called before the first frame update
 		void Start()
@@ -97,14 +95,13 @@ namespace v3
 			// Instantiate the visualizers
 			p1Visualizer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 			p2Visualizer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-
-			// DrawAnalyticalPath();
+			DrawAnalyticalPath();
 
 			Debug.Log(
 				"Eccentricity: " + eccentricity +
-				"\nRelative velocity: " + relativeVelocity +
-				"\nAngular momentum: " + angularMomentum +
-				"\nEnergy: " + energy +
+				"\nRelative velocity: " + initialRelativeVelocity +
+				"\nAngular momentum: " + initialAngularMomentum +
+				"\nEnergy: " + initialEnergy +
 				"\nReduced mass: " + reducedMass +
 				"\nR0: " + r0
 			);
@@ -131,28 +128,50 @@ namespace v3
 			UpdatePlanet(ref p2, force, deltaTime);
 		}
 
+
+
+		float timePassed = 0;
+
+
+		double calculateTotalEnergy(Planet p1, Planet p2){
+			return calculateKeneticEnergy(p1, p2) + calculatePotentialEnergy(p1, p2);
+		}
+
+
+		double calculateAngularMomentum(Planet p1, Planet p2){
+			return VectorD3.Cross(p1.position - p2.position, p1.velocity - p2.velocity).magnitude;
+		}
+
 		// Update is called once per frame
 		void Update()
 		{
 			for (int i = 0; i < stepsPerFrame; i++)
 			{
-
 				StepTime(timeStep, CalculateGravitationalForce(p1, p2));
-
 			}
+
 			DrawVisualizers();
 
-	
+			// Log data
+			timeGraph.AppendLine(timePassed + "," + calculateTotalEnergy(p1, p2) + ", " + calculateAngularMomentum(p1, p2));
 
 			Debug.Log("Enweri OwO");
 			Debug.Log(p1.velocity.sqrMagnitude * p1.mass / 2 + p2.velocity.sqrMagnitude * p2.mass / 2 - G * p1.mass * p2.mass / (p1.position - p2.position).magnitude);
 
 			Debug.Log("OwO Awular Mowentum");
 			Debug.Log(VectorD3.Cross(p1.position - p2.position, reducedMass * (p1.velocity - p2.velocity)).magnitude);
-
 		}
 
-		// private double reducedMass
+
+		double calculatePotentialEnergy(Planet p1, Planet p2)
+		{
+			return -G * p1.mass * p2.mass / (p1.position - p2.position).magnitude;
+		}
+
+		double calculateKeneticEnergy(Planet p1, Planet p2)
+		{
+			return p1.mass * p1.velocity.LengthSquared() + p2.mass * p2.velocity.LengthSquared() / 2;
+		}
 
 		private void DrawVisualizers()
 		{
@@ -170,22 +189,30 @@ namespace v3
 		{
 			distanceVisualizer.transform.position = (Vector3)(p1.position - p2.position);
 		}
+
+		private void WriteCache(){
+			timeGraphWriter.Write(timeGraph);
+			timeGraph.Clear();
+		}
+
+		void OnDestory(){
+			WriteCache();
+			timeGraphWriter.Close();
+		}
 	}
 
-	
-	[Serializable]
 	public struct Planet
 	{
 		[SerializeField]
 		public VectorD3 position;
-		
+
 		[SerializeField]
 		public VectorD3 velocity;
 
 		[SerializeField]
 		public double mass;
 
-		public double keneticEnergy => velocity.sqrMagnitude  * mass / 2;
+		public double keneticEnergy => velocity.sqrMagnitude * mass / 2;
 
 		public Planet(VectorD3 position, VectorD3 velocity, double mass) : this()
 		{
@@ -194,5 +221,4 @@ namespace v3
 			this.mass = mass;
 		}
 	}
-
 }
