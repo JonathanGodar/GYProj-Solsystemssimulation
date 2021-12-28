@@ -14,7 +14,6 @@ namespace v3
 
 		// The gravitational constant in newtons gravitational law
 		public const double G = 0.000000000066743f;  //6.674 * Math.Pow(10, -11);
-																								 // public readonly double G = 0.0000000000667408f;
 
 		[SerializeField] Planet p1Initial, p2Initial;
 
@@ -24,8 +23,8 @@ namespace v3
 
 		[SerializeField] double stepsPerFrame = 1;
 
-		StreamWriter timeGraphWriter;
-		StringBuilder timeGraph;
+		StreamWriter graphWriter;
+		StringBuilder graph;
 
 		// Calculate the gravitational force between two objects
 		public VectorD3 CalculateGravitationalForce(Planet p1, Planet p2)
@@ -56,18 +55,24 @@ namespace v3
 
 		double angleZero => Math.PI; // Math.Atan2(p1Initial.position.y - p2Initial.position.y, p1Initial.position.x - p2Initial.position.x);
 
+
+		VectorD3 VectorFromAngleAndRadius(double angle, double radius){
+			return new VectorD3(radius * Math.Cos(angle), radius * Math.Sin(angle));
+		}
+
 		void DrawAtAngle(double angle)
 		{
 			double radius = GetDistanceFromRadius(angle);
+			Debug.Log(angle + " " + radius);
 
 			GameObject go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-			go.transform.position = (Vector3)(new VectorD3(radius * Math.Cos(angle + angleZero), radius * Math.Sin(angle + angleZero), 0));
-
+			go.GetComponent<Transform>().localScale = new Vector3(.1f, .1f, .1f);
+			go.transform.position = (Vector3)(VectorFromAngleAndRadius(angle, radius));
 			go.GetComponent<Renderer>().material.color = Color.red;
 		}
 		private void DrawAnalyticalPath()
 		{
-			for (double angle = angleZero; angle < Math.PI * 2 + angleZero; angle += Math.PI / 1000)
+			for(double angle = 0; angle < Math.PI * 2; angle += Math.PI / 10)
 			{
 				DrawAtAngle(angle);
 			}
@@ -75,11 +80,13 @@ namespace v3
 		#endregion
 
 		void InitiateGraphs(){
-			timeGraph = new StringBuilder();
-			timeGraph.Append("Tid, Total energi, Vridmoment");
+			graph = new StringBuilder();
+			graph.AppendLine("\"Tid\", \"Total energi\", \"Vridmoment\", \"Avstånd från analytisk lösning\"");
 
-			timeGraphWriter = new StreamWriter("Assets/graphs/timeGraph.csv", false);
+			graphWriter = new StreamWriter("Assets/graphs/graph.csv", false);
 		}
+
+		GameObject coolThingVisualizer;
 
 		// Start is called before the first frame update
 		void Start()
@@ -87,24 +94,21 @@ namespace v3
 			p1 = p1Initial;
 			p2 = p2Initial;
 
-			distanceVisualizer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-
-			// Make the distance visualizer red
-			distanceVisualizer.GetComponent<Renderer>().material.color = Color.red;
 
 			// Instantiate the visualizers
 			p1Visualizer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 			p2Visualizer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-			DrawAnalyticalPath();
 
-			Debug.Log(
-				"Eccentricity: " + eccentricity +
-				"\nRelative velocity: " + initialRelativeVelocity +
-				"\nAngular momentum: " + initialAngularMomentum +
-				"\nEnergy: " + initialEnergy +
-				"\nReduced mass: " + reducedMass +
-				"\nR0: " + r0
-			);
+
+			coolThingVisualizer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+			coolThingVisualizer.GetComponent<Renderer>().material.color = Color.blue;
+
+			distanceVisualizer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+			// Make the distance visualizer red
+			distanceVisualizer.GetComponent<Renderer>().material.color = Color.red;
+
+			DrawAnalyticalPath();
+			InitiateGraphs();
 		}
 
 
@@ -126,15 +130,16 @@ namespace v3
 			// Use the euler method to find the planets new position
 			UpdatePlanet(ref p1, -force, deltaTime);
 			UpdatePlanet(ref p2, force, deltaTime);
+			timePassed += deltaTime;
 		}
 
 
 
-		float timePassed = 0;
+		double timePassed = 0;
 
 
 		double calculateTotalEnergy(Planet p1, Planet p2){
-			return calculateKeneticEnergy(p1, p2) + calculatePotentialEnergy(p1, p2);
+			return calculateKineticEnergy(p1, p2) + calculatePotentialEnergy(p1, p2);
 		}
 
 
@@ -143,40 +148,62 @@ namespace v3
 		}
 
 		// Update is called once per frame
-		void Update()
-		{
-			for (int i = 0; i < stepsPerFrame; i++)
-			{
-				StepTime(timeStep, CalculateGravitationalForce(p1, p2));
-			}
+		// void Update()
+		// {
+		// 	for (int i = 0; i < stepsPerFrame; i++)
+		// 	{
+		// 		StepTime(timeStep, CalculateGravitationalForce(p1, p2));
+		// 	}
 
-			DrawVisualizers();
+		// 	DrawVisualizers();
 
-			// Log data
-			timeGraph.AppendLine(timePassed + "," + calculateTotalEnergy(p1, p2) + ", " + calculateAngularMomentum(p1, p2));
+		// 	// Log data
+		// 	var totalEnergy = calculateTotalEnergy(p1, p2);
+		// 	var angularMomentum = calculateAngularMomentum(p1, p2);
+		// 	var distanceFrom = calculateDistanceFromAnalytical(p1, p2);
+		// 	Debug.Log(distanceFrom);
+		// 	graph.AppendLine($"{timePassed}, {totalEnergy}, {angularMomentum}, {distanceFrom}");
 
-			Debug.Log("Enweri OwO");
-			Debug.Log(p1.velocity.sqrMagnitude * p1.mass / 2 + p2.velocity.sqrMagnitude * p2.mass / 2 - G * p1.mass * p2.mass / (p1.position - p2.position).magnitude);
+		// 	if(Input.GetKeyDown(KeyCode.Space)) {
+		// 		FinalizeGraphs();
+		// 		Destroy(this);
+		// 	}
+		// }
 
-			Debug.Log("OwO Awular Mowentum");
-			Debug.Log(VectorD3.Cross(p1.position - p2.position, reducedMass * (p1.velocity - p2.velocity)).magnitude);
+		double calculateDistanceFromAnalytical(Planet p1, Planet p2){
+			double angle = Math.Atan2(p1.position.y - p2.position.y, p1.position.x - p2.position.x);
+			double currentDistance = (p1.position - p2.position).magnitude;
+
+			return GetDistanceFromRadius(angle) - currentDistance;
 		}
 
+
+		void FinalizeGraphs(){
+			WriteCache();
+			graphWriter.Close();
+		}
 
 		double calculatePotentialEnergy(Planet p1, Planet p2)
 		{
 			return -G * p1.mass * p2.mass / (p1.position - p2.position).magnitude;
 		}
 
-		double calculateKeneticEnergy(Planet p1, Planet p2)
+		double calculateKineticEnergy(Planet p1, Planet p2)
 		{
 			return p1.mass * p1.velocity.LengthSquared() + p2.mass * p2.velocity.LengthSquared() / 2;
 		}
 
 		private void DrawVisualizers()
 		{
+			DrawCoolThing();
 			DrawDistance();
 			DrawPlanetVisualizers();
+		}
+
+		private void DrawCoolThing(){
+			double currAngle = Math.Atan2(-p1.position.y + p2.position.y, -p1.position.x + p2.position.x);
+			double distance = GetDistanceFromRadius(currAngle);
+			coolThingVisualizer.transform.position = (Vector3)(VectorFromAngleAndRadius(currAngle, distance));
 		}
 
 		private void DrawPlanetVisualizers()
@@ -191,16 +218,14 @@ namespace v3
 		}
 
 		private void WriteCache(){
-			timeGraphWriter.Write(timeGraph);
-			timeGraph.Clear();
-		}
-
-		void OnDestory(){
-			WriteCache();
-			timeGraphWriter.Close();
+			Debug.Log(graph);
+			graphWriter.Write(graph.ToString());
+			graph.Clear();
 		}
 	}
 
+
+	[Serializable]
 	public struct Planet
 	{
 		[SerializeField]
