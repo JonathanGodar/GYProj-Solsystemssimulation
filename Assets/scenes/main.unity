@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3091b1d65732b554e8d6dc266398168d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timeStep: 1
+  timeStep: 0.0001
   p1Initial:
     position:
       x: 1
@@ -160,9 +160,9 @@ MonoBehaviour:
       z: 0
     velocity:
       x: 0
-      y: -0.01
+      y: -0.1
       z: 0
-    mass: 10000000
+    mass: 1000000
   p2Initial:
     position:
       x: -1
@@ -170,11 +170,11 @@ MonoBehaviour:
       z: 0
     velocity:
       x: 0
-      y: 0.01
+      y: 0.1
       z: 0
-    mass: 10000000
-  stepsPerFrame: 1
-  targetTimeElapsed: 200
+    mass: 100000000
+  stepsPerFrame: 1000
+  targetTimeElapsed: 60000
 --- !u!4 &971995334
 Transform:
   m_ObjectHideFlags: 0

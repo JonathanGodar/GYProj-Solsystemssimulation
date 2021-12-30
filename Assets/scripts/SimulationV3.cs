@@ -36,29 +36,30 @@ namespace v3
         #region For analytical method
         public double GetDistanceFromAngle(double radians)
         {
-            return r0 / (1 - eccentricity * Math.Cos(radians)) * 0.4;
+            return rp / (1 - eccentricity * Math.Cos(radians));
         }
 
-        double r0 => (p1Initial.position - p2Initial.position).magnitude;
+        VectorD3 initialReducedVeloity => p1Initial.velocity - p2Initial.velocity;
 
-        double eccentricity => Math.Sqrt(1 + 2 * initialEnergy * Math.Pow(initialAngularMomentum, 2) / (reducedMass * Math.Pow((G * p1Initial.mass * p2Initial.mass), 2)));
+        double reducedMass => p1Initial.mass * p2Initial.mass / (p1Initial.mass + p2Initial.mass);
 
-        double sqrInitialRelativeVelocity => (p1Initial.velocity - p2Initial.velocity).sqrMagnitude;
-        double initialRelativeVelocity => Math.Sqrt(sqrInitialRelativeVelocity);
+        VectorD3 initialReducedPos => p1Initial.position - p2Initial.position;
+        
+        // Från 2 till 1
+        double initialAngularMomentum => (p1Initial.position - p2Initial.position).magnitude * reducedMass * initialReducedVeloity.magnitude * Math.Sin(
+            initialReducedPos.AngleFromOneZero() - initialReducedVeloity.AngleFromOneZero()
+            ); 
 
-        double initialAngularMomentum => VectorD3.Cross(p1Initial.position - p2Initial.position, reducedMass * (p1Initial.velocity - p2Initial.velocity)).magnitude;
+        double rp => initialAngularMomentum * initialAngularMomentum / ( reducedMass * G * p1Initial.mass * p2Initial.mass);
+        double initialReducedEnergy => reducedMass * initialReducedVeloity.LengthSquared() / 2 - G * p1Initial.mass * p2Initial.mass / initialReducedPos.magnitude;
+        
 
-        // NOTE: something is wrong here
-        //double initialEnergy => reducedMass / 2 * sqrInitialRelativeVelocity - G * p1Initial.mass * p2Initial.mass / r0;
+        double eccentricity => Math.Sqrt(1 + 2 * initialReducedEnergy * Math.Pow(initialAngularMomentum,2) / (reducedMass * Math.Pow(G * p1Initial.mass * p2Initial.mass, 2)));
 
-        double initialEnergy => calculatePotentialEnergy(p1Initial, p2Initial) + calculateKineticEnergy(p1Initial, p2Initial);
 
+        // TODO kolla sen
         double cachedInitialEnergy = 0;
         double cachedAngularMomentum = 0;
-
-        double reducedMass => (p1Initial.mass * p2Initial.mass) / (p1Initial.mass + p2Initial.mass);
-
-        double angleZero => Math.PI; // Math.Atan2(p1Initial.position.y - p2Initial.position.y, p1Initial.position.x - p2Initial.position.x);
 
 
         VectorD3 VectorFromAngleAndRadius(double angle, double radius)
@@ -87,7 +88,7 @@ namespace v3
         void InitiateGraphs()
         {
             graph = new StringBuilder();
-            graph.AppendLine("\"Tid(s)\", \"Total energi(J)\", \"Energi/E0\", \"Vridmoment(kg*m^2/s)\", \"Vridmoment/L0\", \"Vinkel(rad)\", \"Avstånd från analytisk lösning(m)\"");
+            graph.AppendLine("\"Tid(s)\", \"Total energi(J)\", \"Energi/E0\", \"Vridmoment(kg*m^2/s)\", \"Vridmoment/L0\", \"Vinkel(rad)\", \"Avstånd från analytisk lösning(m)\", \"Avstånd från analytisk lösning/r0\", \"p1 vel\", \"p2 vel\", \"reducerad vel\"");
             graphWriter = new StreamWriter("Assets/graphs/graph.csv", false);
         }
 
@@ -112,9 +113,19 @@ namespace v3
             // Make the distance visualizer red
             distanceVisualizer.GetComponent<Renderer>().material.color = Color.red;
 
-            cachedInitialEnergy = initialEnergy;
-            Debug.Log(cachedInitialEnergy);
-            cachedAngularMomentum = initialAngularMomentum;
+            var a = initialAngularMomentum;
+
+
+            //cachedInitialEnergy = initialEnergy;
+            //cachedAngularMomentum = initialAngularMomentum;
+            //cachedR0 = rp;
+
+
+            //// TEMP
+            //// var r0jobbig =  initialAngularMomentum * initialAngularMomentum / (G * p1Initial.mass * p2Initial.mass * reducedMass);
+            //// Debug.Log(r0 + " jobbig: " + r0jobbig);
+
+
             DrawAnalyticalPath();
             InitiateGraphs();
         }
@@ -159,9 +170,10 @@ namespace v3
 
         [SerializeField]
         double targetTimeElapsed = 360;
+		private double cachedR0;
 
-        // Update is called once per frame
-        void Update()
+		// Update is called once per frame
+		void Update()
         {
             var timeLeft = targetTimeElapsed - timePassed;
             var framesToPass = stepsPerFrame;
@@ -185,9 +197,16 @@ namespace v3
             var angularMomentumChange = angularMomentum / cachedAngularMomentum;
             var angle = Math.Atan2(p1.position.y - p2.position.y, p1.position.x - p2.position.x);
             var distanceFrom = calculateDistanceFromAnalytical(p1, p2);
+            var distanceFromPercent = distanceFrom / cachedR0;
+
+            var p1Vel = p1.velocity.magnitude;
+            var p2Vel = p2.velocity.magnitude;
+
+            var reducedVel = (p1.velocity - p2.velocity).magnitude;
+
 
             //graph.AppendLine("\"Tid(s)\", \"Total energi(J)\", \"Energi/E0\", \"Vridmoment(kg*m^2/s)\", \"Vridmoment/L0\", \"Vinkel(rad)\", \"Avstånd från analytisk lösning(m)\"");
-            graph.AppendLine($"{timePassed}, {totalEnergy}, {energyPercent}, {angularMomentum}, {angularMomentumChange}, {angle}, {distanceFrom}");
+            graph.AppendLine($"{timePassed}, {totalEnergy}, {energyPercent}, {angularMomentum}, {angularMomentumChange}, {angle}, {distanceFrom}, {p1Vel}, {p2Vel}, {reducedVel}");
 
             if (Input.GetKeyDown(KeyCode.Space) || timeLeft <= 0)
             {

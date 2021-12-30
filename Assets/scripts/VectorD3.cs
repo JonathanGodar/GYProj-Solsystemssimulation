@@ -11,13 +11,13 @@ namespace Simulation
 
 
         [SerializeField]
-        public double x; 
+        public double x;
 
         [SerializeField]
-        public double y; 
-        
+        public double y;
+
         [SerializeField]
-        public double z; 
+        public double z;
 
         public static VectorD3 Zero => new VectorD3();
 
@@ -45,6 +45,12 @@ namespace Simulation
         {
             return x * x + y * y + z * z;
         }
+
+        public double AngleFromOneZero()
+        {
+            return Math.Atan2(y, x);
+        }
+
 
         /**
          * Resource intensive, use carefully
