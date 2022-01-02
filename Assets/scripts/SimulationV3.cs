@@ -57,11 +57,6 @@ namespace v3
         double eccentricity => Math.Sqrt(1 + 2 * initialReducedEnergy * Math.Pow(initialAngularMomentum,2) / (reducedMass * Math.Pow(G * p1Initial.mass * p2Initial.mass, 2)));
 
 
-        // TODO kolla sen
-        double cachedInitialEnergy = 0;
-        double cachedAngularMomentum = 0;
-
-
         VectorD3 VectorFromAngleAndRadius(double angle, double radius)
         {
             return new VectorD3(radius * Math.Cos(angle), radius * Math.Sin(angle));
@@ -88,7 +83,10 @@ namespace v3
         void InitiateGraphs()
         {
             graph = new StringBuilder();
-            graph.AppendLine("\"Tid(s)\", \"Total energi(J)\", \"Energi/E0\", \"Vridmoment(kg*m^2/s)\", \"Vridmoment/L0\", \"Vinkel(rad)\", \"Avstånd från analytisk lösning(m)\", \"Avstånd från analytisk lösning/r0\", \"p1 vel\", \"p2 vel\", \"reducerad vel\"");
+
+            //graph.Append($"{angularMomentum}, {angularMomentumChange}, {energy}, {energyChange}, {distanceFromAnalyticalSolution}, {distanceFromAnalyticalSolutionChange}, {velocity}, {time}");
+            //graph.AppendLine($"{angularMomentum}, {angularMomentumChange}, {energy}, {energyChange}, {distanceFromAnalyticalSolution}, {distanceFromAnalyticalSolutionChange}, {velocity}, {velocityChange}, {deltaVelocity}, {time}");
+            graph.AppendLine("\"tid\",\"Rörelsemängdsmoment (kg * m^2/s)\",\"Förändring rörelsemängdsmoment\",\"energi (J)\",\"förändring energi\",\"avstånd från analytisk lösning (m)\",\"hastighet(m/s)\",\"Hastighet jfr början\",\"delta hastighet\"");
             graphWriter = new StreamWriter("Assets/graphs/graph.csv", false);
         }
 
@@ -106,16 +104,22 @@ namespace v3
             p2Visualizer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 
 
+            p1Visualizer.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
+            p2Visualizer.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
+
+
             coolThingVisualizer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             coolThingVisualizer.GetComponent<Renderer>().material.color = Color.blue;
+            coolThingVisualizer.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
 
             distanceVisualizer = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             // Make the distance visualizer red
             distanceVisualizer.GetComponent<Renderer>().material.color = Color.red;
+            distanceVisualizer.transform.localScale = new Vector3(0.6f, 0.6f, 0.6f);
 
             var a = initialAngularMomentum;
 
-
+            prevVel = reducedVelocity.magnitude;
             //cachedInitialEnergy = initialEnergy;
             //cachedAngularMomentum = initialAngularMomentum;
             //cachedR0 = rp;
@@ -172,8 +176,20 @@ namespace v3
         double targetTimeElapsed = 360;
 		private double cachedR0;
 
-		// Update is called once per frame
-		void Update()
+        #region For generating values
+        double currentAngularMomentum => (p1.position - p2.position).magnitude * reducedMass * reducedVelocity.magnitude * Math.Sin(
+            reducedPos.AngleFromOneZero() - reducedVelocity.AngleFromOneZero()
+            );
+
+        double currentEnergy => reducedMass * reducedVelocity.sqrMagnitude / 2 - G * p1.mass * p2.mass / reducedPos.magnitude;
+
+        VectorD3 reducedPos => p1.position - p2.position;
+        VectorD3 reducedVelocity => p1.velocity - p2.velocity;
+
+        #endregion
+        // Update is called once per frame
+        double prevVel;
+        void Update()
         {
             var timeLeft = targetTimeElapsed - timePassed;
             var framesToPass = stepsPerFrame;
@@ -190,23 +206,28 @@ namespace v3
 
             DrawVisualizers();
 
-            // Log data
-            var totalEnergy = calculateTotalEnergy(p1, p2);
-            var energyPercent = totalEnergy / cachedInitialEnergy;
-            var angularMomentum = calculateAngularMomentum(p1, p2);
-            var angularMomentumChange = angularMomentum / cachedAngularMomentum;
-            var angle = Math.Atan2(p1.position.y - p2.position.y, p1.position.x - p2.position.x);
-            var distanceFrom = calculateDistanceFromAnalytical(p1, p2);
-            var distanceFromPercent = distanceFrom / cachedR0;
-
-            var p1Vel = p1.velocity.magnitude;
-            var p2Vel = p2.velocity.magnitude;
-
-            var reducedVel = (p1.velocity - p2.velocity).magnitude;
 
 
-            //graph.AppendLine("\"Tid(s)\", \"Total energi(J)\", \"Energi/E0\", \"Vridmoment(kg*m^2/s)\", \"Vridmoment/L0\", \"Vinkel(rad)\", \"Avstånd från analytisk lösning(m)\"");
-            graph.AppendLine($"{timePassed}, {totalEnergy}, {energyPercent}, {angularMomentum}, {angularMomentumChange}, {angle}, {distanceFrom}, {p1Vel}, {p2Vel}, {reducedVel}");
+            double angularMomentum = currentAngularMomentum;
+            double angularMomentumChange = angularMomentum / initialAngularMomentum - 1; // L / L0;
+
+            double energy = currentEnergy;
+            double energyChange = currentEnergy / initialReducedEnergy - 1;
+
+
+            double numericalAngle = reducedPos.AngleFromOneZero();
+            double analyticalDistance = GetDistanceFromAngle(numericalAngle);
+            double distanceFromAnalyticalSolution = (VectorFromAngleAndRadius(numericalAngle, analyticalDistance) - reducedPos).magnitude;
+
+
+            double velocity = reducedVelocity.magnitude;
+            double velocityChange = velocity / initialReducedVeloity.magnitude - 1;
+            double deltaVelocity = velocity - prevVel;
+            double time = timePassed;
+
+            graph.AppendLine($"{time},{angularMomentum},{angularMomentumChange},{energy},{energyChange},{distanceFromAnalyticalSolution},{velocity},{velocityChange},{deltaVelocity}");
+            prevVel = velocity;
+
 
             if (Input.GetKeyDown(KeyCode.Space) || timeLeft <= 0)
             {
@@ -231,6 +252,10 @@ namespace v3
 
         void FinalizeGraphs()
         {
+            graph.AppendLine("");
+            graph.AppendLine("\"Tidssteg\",\"Steg per frame\",\"p1\",\"p2\"");
+            graph.Append($"{timeStep},{stepsPerFrame},\"{p1Initial}\",\"{p2Initial}\"");
+
             WriteCache();
             graphWriter.Close();
         }
@@ -272,7 +297,6 @@ namespace v3
 
         private void WriteCache()
         {
-            Debug.Log(graph);
             graphWriter.Write(graph.ToString());
             graph.Clear();
         }
@@ -299,5 +323,11 @@ namespace v3
             this.velocity = velocity;
             this.mass = mass;
         }
+
+        public override string ToString()
+        {
+            return $"{{Massa: {mass}, Position: {position}, Hastighet: {velocity}}}";
+        }
+
     }
 }

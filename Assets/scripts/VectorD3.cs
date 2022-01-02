@@ -76,7 +76,7 @@ namespace Simulation
 
         public override string ToString()
         {
-            return $"VecD3 {{ X: {x}, Y: {y}, Z: {z}}}";
+            return $"{{X: {x}, Y: {y}, Z: {z}}}";
         }
 
 
@@ -131,6 +131,7 @@ namespace Simulation
                     (a.x * b.y) - (a.y * b.x)
                 );
         }
+
 
     }
 }
